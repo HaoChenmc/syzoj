@@ -9,17 +9,24 @@
           登录
         </div>
       </h2>
-      <form class="ui large form">
-        <div class="ui existing segment">
+        <% date = new Date()
+           if(date.getMonth()+1 === 4 && date.getDate()===1) { %>
+        <h2>
+            <div class="content" style="margin-bottom: 10px; color:green">
+                愚人节快乐！
+            </div>
+        </h2><% } %>
+      <form class="ui form">
+
           <div class="field">
-            <div class="ui left icon input">
-              <i class="user icon"></i>
+          <label for="username">用户名</label>
+            <div class="ui left input">
               <input name="email" placeholder="用户名" type="text" id="username" onkeydown="key_login(event)">
             </div>
-          </div>
+
           <div class="field">
-            <div class="ui left icon input">
-              <i class="lock icon"></i>
+          <label for="username">密码</label>
+            <div class="ui left input">
               <input name="password" placeholder="密码" type="password" id="password" onkeydown="key_login(event)">
             </div>
           </div>

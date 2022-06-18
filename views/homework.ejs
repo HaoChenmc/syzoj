@@ -1,0 +1,148 @@
+<% this.title = homework.title + ' - 作业' %>
+<% include header %>
+<div class="padding">
+    <h1><%= homework.title %></h1>
+    <div style="margin-bottom: 30px;"><%- homework.subtitle %></div>
+    <div class="ui grid">
+        <div class="row">
+            <div class="column">
+                <div class="ui buttons">
+                    <% if(homework.is_public) { %>
+                        <% if(joined) { %>
+                            <a class="ui small yellow button"
+                               href-post="<%= syzoj.utils.makeUrl(['homework', homework.id, 'leave']) %>">离开作业</a>
+                        <% } else { %>
+                            <a class="ui small green button"
+                               href-post="<%= syzoj.utils.makeUrl(['homework', homework.id, 'join']) %>">加入作业</a>
+                        <% } %>
+                    <% } %>
+                    <% if (allowedManageHomework) { %>
+                        <a class="ui small button" href="<%= syzoj.utils.makeUrl(['homework', homework.id, 'edit']) %>">编辑作业</a>
+                        <div class="ui basic modal" id="modal-delete">
+                            <div class="ui icon header">
+                                <p style="margin-top: 15px; ">删除作业</p>
+                            </div>
+                            <div class="content" style="text-align: center; ">
+                                <p>确认删除此作业吗？</p>
+                            </div>
+                            <div class="actions">
+                                <div class="ui red basic cancel inverted button">
+                                    <i class="remove icon"></i>
+                                    否
+                                </div>
+                                <a class="ui green ok inverted button"
+                                   href-post="<%= syzoj.utils.makeUrl(['homework', homework.id, 'delete']) %>">
+                                    <i class="checkmark icon"></i>
+                                    是
+                                </a>
+                            </div>
+                        </div>
+                        <div class="small ui red button" onclick="$('#modal-delete').modal('show')">删除作业</div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+        <% if (homework.information) { %>
+            <div class="row">
+                <div class="column">
+                    <h4 class="ui top attached block header">信息与公告</h4>
+                    <div class="ui bottom attached segment">
+                        <%- homework.information %>
+                    </div>
+                </div>
+            </div>
+        <% } %>
+        <% if(joined || allowedManageHomework ) { %>
+            <div class="row">
+                <div class="column">
+                    <h4 class="ui top attached block header">题目列表</h4>
+                    <table class="ui bottom attached selectable celled table">
+                        <thead>
+                        <tr>
+                            <th class="one wide" style="text-align: center">提交状态</th>
+                            <th class="one wide">编号</th>
+                            <th>题目名称</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <%
+                            let i = 0;
+                                for (let problem of problems) {
+                            i++;
+                        %>
+                        <tr>
+                            <td style="text-align: center">
+                                <% if (problem.judge_state) { %>
+                                    <a href="<%= syzoj.utils.makeUrl(['submission', problem.judge_state.id]) %>">
+                                    <span class="status <%= problem.judge_state.status.toLowerCase().split(' ').join('_') %>">
+                                        <i class="<%= icon[problem.judge_state.status] || 'remove' %> icon"></i>
+                                    </span>
+                                    </a>
+                                <% } %>
+                            </td>
+                            <td><b><%= problem.id %></b></td>
+                            <td>
+                                <a style="vertical-align: middle; "
+                                   href="<%= syzoj.utils.makeUrl(['problem', problem.id]) %>"><%= problem.title %>
+                                    <% if (!problem.is_public) { %><span class="ui header"><span
+                                                class="ui tiny red label">未公开</span></span>
+                                    <% } %>
+                                </a>
+                            </td>
+                        </tr>
+                        <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="row">
+                <div class="column" >
+                    <h4 class="ui top attached block header">完成情况</h4>
+                    <div class="ui bottom attached table" style="overflow-x: scroll">
+                        <table class="ui center aligned selectable celled table">
+                            <thead>
+                            <tr>
+                                <th class="two wide">用户名</th>
+                                <th class="two wide">昵称/备注名</th>
+                                <th class="one wide">完成数</th>
+                                <% for(let problem of problems) { %>
+                                    <th>
+                                        <a href="<%= syzoj.utils.makeUrl(['problem', problem.id]) %>">
+                                            #<%= problem.id %>
+                                        </a>
+                                    </th>
+                                <% } %>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <% for(let item of ranklist) { %>
+                                <tr>
+                                    <td><a href="<%= syzoj.utils.makeUrl(['user', item.user.id]) %>">
+                                            <%= item.user.username %>
+                                        </a></td>
+                                    <td><%= item.user.nickname %></td>
+                                    <td><%= item.solved %></td>
+                                    <% for (let judge_state of item.judge_states) { %>
+                                        <td>
+                                            <% if(judge_state) { %>
+                                                <a href="<%= syzoj.utils.makeUrl(['submission', judge_state.id]) %>">
+                                            <span class="score score_<%= parseInt((judge_state.score / 10) || 0) %>">
+                                                <%= parseInt(judge_state.score) || 0 %>
+                                            </span>
+                                                </a>
+                                            <% } else { %>
+                                                未提交
+                                            <% } %>
+                                        </td>
+                                    <% } %>
+                                </tr>
+                            <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        <% } %>
+    </div>
+</div>
+<% include footer %>

@@ -1,0 +1,102 @@
+<% this.title = '赛后补题 - ' + contest.title %>
+<% include header %>
+<style>
+.submit_time {
+  font-size: 0.8em;
+  margin-top: 5px;
+  color: #000;
+}
+</style>
+<div class="padding">
+<h1 class="ui center aligned header" style="margin-bottom: 30px; "><%= contest.title %>赛后补题得分表</h1>
+        <table class="ui very basic center aligned table">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>用户名</th>
+                <th>昵称/备注名</th>
+                <% for (let i = 0; i < problems.length; i++) { %>
+                <th>
+                  <div>
+                  <a href="<%= syzoj.utils.makeUrl(['contest', contest.id, 'problem', i + 1]) %>">
+                    <!-- <%= syzoj.utils.removeTitleTag(problems[i].title) %> -->
+                    <big> 
+                      T<%= i + 1 %> 
+                    </big>
+                  </a>
+                  </div>
+                  <div>比赛/赛后</div>
+                </th>
+                <% } %>
+            </tr>
+            </thead>
+            <tbody>
+            <%
+            let i = 0;
+            for (let item of ranklist) {
+              i++;
+            %>
+            <tr>
+                <td>
+                    <div>
+                    <%= i %>
+                  </div>
+                </td>
+                <td><a href="<%= syzoj.utils.makeUrl(['user', item.user.id]) %>"><span class="user-name user-<%= syzoj.utils.makeUserColor(item.user.rating, item.user.is_admin) %>"><%= item.user.username %></span></a><% if (item.user.nameplate) { %><%- item.user.nameplate %><% } %></td>
+                <td><% if (item.user.nickname) { %><span class="user-gray user-nameplate"><%= item.user.nameplate %></span><% } %></td>
+                <% for (let problem of problems) { %>
+                  <td>
+                  <% if (item.player.ended_score_details[problem.id].ended_score === -1) { %>
+                    未提交  
+                  </td>
+                  <% } else { %>
+                    <% if(contest.type === 'acm') { %>
+                      <% if (item.player.score_details[problem.id]) { %>
+                        <a href="<%= syzoj.utils.makeUrl(['submission', item.player.score_details[problem.id].judge_id]) %>">
+                          <% if (item.player.score_details[problem.id].accepted) { %>
+                            <span class="score score_10">
+                              AC
+                            </span>
+                          <% } else if (item.player.score_details[problem.id].unacceptedCount) { %>
+                            <span class="score score_0">
+                              -<%= item.player.score_details[problem.id].unacceptedCount %>
+                            </span>
+                          <% } %>
+                        </a>
+                      <% } else {%>
+                        未提交
+                      <% } %>
+                    <% } else { %>
+                      <% if(item.player.score_details[problem.id]) { %>
+                        <a href="<%= syzoj.utils.makeUrl(['submission', item.player.score_details[problem.id].judge_id]) %>">
+                          <span class="score score_<%= parseInt((item.player.score_details[problem.id].score / 10) || 0) %>">
+                            <%= item.player.score_details[problem.id].score %>
+                          </span>
+                        </a>  
+                      <% } else { %>
+                        未提交
+                      <% } %> 
+                    <% } %> /
+                    <a href="<%= syzoj.utils.makeUrl(['submission', item.player.ended_score_details[problem.id].judge_id]) %>">
+                          <span class="score score_<%= parseInt((item.player.ended_score_details[problem.id].ended_score / 10) || 0) %>">
+                            <%= item.player.ended_score_details[problem.id].ended_score %>
+                          </span>
+                      </a>
+                    </td>
+                  <% } %>
+                <% } %>
+            </tr>
+            <% } %>
+            </tbody>
+        </table>
+<% if (!ranklist.length) { %>
+<div style="background-color: #fff; height: 18px; margin-top: -18px; "></div>
+<div class="ui placeholder segment" style="margin-top: 0px; ">
+  <div class="ui icon header">
+    <i class="ui file icon" style="margin-bottom: 20px; "></i>
+    暂无选手提交
+  </div>
+</div>
+<% } %>
+</div>
+<% include footer %>

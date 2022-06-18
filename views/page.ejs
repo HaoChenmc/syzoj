@@ -5,7 +5,7 @@
       <i class="left chevron icon"></i>
     </a>
     <%
-    let leftCnt = paginate.currPage - 2, rightCnt = paginate.pageCnt - paginate.currPage, omitLeft, omitRight;
+    let leftCnt = paginate.currPage - 2, rightCnt = paginate.pageCnt - paginate.currPage, omitLeft, omitRight, pageInput;
     if (leftCnt + rightCnt > 15) {
       if (leftCnt <= 7) {
         rightCnt = 14 - leftCnt;
@@ -17,6 +17,7 @@
         rightCnt = leftCnt = 7;
         omitLeft = omitRight = true;
       }
+      pageInput = true;
     } %>
 
     <% if (paginate.currPage !== 1) { %>
@@ -48,6 +49,32 @@
     <a class="<% if (paginate.currPage === paginate.pageCnt) { %> disabled<% } %> icon item" <% if (paginate.currPage !== paginate.pageCnt) { %>href="<%= syzoj.utils.makeUrl(req, Object.assign({}, req.query, { page: paginate.currPage + 1 })) %>" <% } %>id="page_next">
       <i class="right chevron icon"></i>
     </a>
+
+    <% if(pageInput) { %>
+      <% let rand = parseInt(Math.random()*1e9); %>
+      <div class="disabled item" >
+        <div class="ui mini input" style="width: 40px">
+          <input id="page-input-<%= rand %>" name="page" type="text" style="text-align: center">
+        </div>
+      </div>
+      <a class="icon item" id="page-jump-<%= rand %>"><i class="share icon"></i></a>
+      <script>
+        $("#page-jump-<%= rand %>").click(() => {
+          const page = parseInt($("#page-input-<%= rand %>").val());
+          if(isNaN(page) || page < 1 || page > <%- serializejs(paginate.pageCnt) %>) {
+            alert("请输入合法的页码");
+            return;
+          }
+          if(page === <%- serializejs(paginate.currPage) %>) {
+            alert("您已经在这个页面了");
+            return;
+          }
+          let link = <%- serializejs(syzoj.utils.makeUrl(req, Object.assign({}, req.query, { page: "PAGE"+rand }))); %>
+          link = link.replace("PAGE<%= rand %>",page);
+          window.location = link;
+        });
+      </script>
+    <% } %>
   </div>
 </div>
 <% } %>

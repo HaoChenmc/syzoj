@@ -1,0 +1,50 @@
+<% this.title = '作业' %>
+<% include header %>
+<div class="padding">
+    <div class="ui mini">
+        <div class="inline fields" style="margin-bottom: 25px; white-space: nowrap; ">
+            <% if (allowedManageHomework && homeworks.length) { %>
+                <a href="<%= syzoj.utils.makeUrl(['homework', 0, 'edit']) %>" class="ui mini labeled icon right floated button" style="margin-left: auto; ">
+                    <i class="ui icon write"></i>
+                    添加作业
+                </a>
+            <% } %>
+        </div>
+    </div>
+    <% if (homeworks.length) { %>
+        <table class="ui very basic center aligned table">
+            <thead>
+            <tr>
+                <th>作业名称</th>
+                <th>描述</th>
+            </tr>
+            </thead>
+            <tbody>
+            <%
+            for (let homework of homeworks) {
+            %>
+            <tr>
+                <td><a href="<%= syzoj.utils.makeUrl(['homework', homework.id]) %>"><%= homework.title %></a></td>
+                <td class="font-content"><%- homework.subtitle %></td>
+            </tr>
+            <% } %>
+            </tbody>
+        </table>
+    <% } else { %>
+        <div class="ui placeholder segment">
+            <div class="ui icon header">
+                <i class="book icon" style="margin-bottom: 20px; "></i>
+                暂无作业
+            </div>
+            <% if (allowedManageHomework) { %>
+                <a href="<%= syzoj.utils.makeUrl(['homework', 0, 'edit']) %>" class="ui primary labeled icon button">
+                    <i class="ui icon write"></i>
+                    添加第一个作业
+                </a>
+            <% } %>
+        </div>
+    <% } %>
+    <br>
+    <% include page %>
+</div>
+<% include footer %>

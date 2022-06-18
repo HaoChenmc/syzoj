@@ -57,18 +57,19 @@ if (contest) {
             <% if (problem.is_anonymous && !problem.allowedManage) { %>
               匿名
             <% } else { %>
-              <a href="<%= syzoj.utils.makeUrl(['user', problem.user_id]) %>"><%= problem.user.username %></a>
+              <a href="<%= syzoj.utils.makeUrl(['user', problem.user_id]) %>"><span class="user-name user-<%= syzoj.utils.makeUserColor(problem.publicizer.rating, problem.publicizer.is_admin) %>"><%= problem.publicizer.username %></span></a>
             <% } %>
             </span>
             <% if (problem.allowedManage) { %>
                 <span class="ui label">公开者：
                 <% if (problem.publicizer) { %>
-                  <a href="<%= syzoj.utils.makeUrl(['user', problem.publicizer_id]) %>"><%= problem.publicizer.username %></a>
+                  <a href="<%= syzoj.utils.makeUrl(['user', problem.publicizer_id]) %>"><span class="user-name user-<%= syzoj.utils.makeUserColor(problem.publicizer.rating, problem.publicizer.is_admin) %>"><%= problem.publicizer.username %></span></a>
                 <% } else { %>
                   未知
                 <% } %>
                 </span>
             <% } %>
+            <span class="ui label">用户限制： Lv.<%= problem.allow_level %></span>
         </div>
     <% } %>
 </div>
@@ -93,7 +94,6 @@ if (contest) {
           <% } %>
           <a class="small ui positive button" href="<%= syzoj.utils.makeUrl(['submissions'], { problem_id: problem.id }) %>">提交记录</a>
           <a class="small ui orange button" href="<%= syzoj.utils.makeUrl(['problem', problem.id, 'statistics', problem.type === 'submit-answer' ? 'shortest' : 'fastest']) %>">统计</a>
-          <a class="small ui yellow button" href="<%= syzoj.utils.makeUrl(['problem', problem.id, 'testdata']) %>">测试数据</a>
           <% if (problem.additional_file) { %>
             <a class="small ui teal button" href="<%= syzoj.utils.makeUrl(['problem', problem.id, 'download', 'additional_file']) %>">附加文件</a>
           <% } %>
@@ -109,6 +109,7 @@ if (contest) {
         <div class="ui buttons right floated">
           <% if (problem.allowedEdit) { %>
             <a class="small ui button" href="<%= syzoj.utils.makeUrl(['problem', problem.id, 'edit']) %>">编辑</a>
+            <a class="small ui button" href="<%= syzoj.utils.makeUrl(['problem', problem.id, 'testdata']) %>">测试数据</a>
             <a class="small ui button" href="<%= syzoj.utils.makeUrl(['problem', problem.id, 'manage']) %>">管理</a>
           <% } %>
           <% if (problem.allowedManage) { %>
@@ -302,10 +303,10 @@ if (contest) {
                   <div class="ui attached vertical fluid pointing menu" id="languages-menu" style="height: 370px; overflow-y: scroll; overflow-x: hidden; ">
                     <%
                     let language = syzoj.config.enabled_languages[0];
-                    if (state) {
+                    if (state && syzoj.config.enabled_languages.includes(state.language)) {
                       language = state.language;
-                    } else if (lastLanguage) language = lastLanguage;
-                    if (!syzoj.config.enabled_languages.includes(language)) language = syzoj.config.enabled_languages[0];
+                    } else if (lastLanguage && syzoj.config.enabled_languages.includes(lastLanguage)) language = lastLanguage;
+                    
                     %>
                     <% for (lang of syzoj.config.enabled_languages) { %>
                       <a style="border-radius: 0; " class="item<%= lang === language ? ' active' : '' %>" data-value="<%= lang %>" data-mode="<%= syzoj.languages[lang].editor %>">

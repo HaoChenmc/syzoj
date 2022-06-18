@@ -22,17 +22,19 @@
           </tbody>
         </table>
       </div>
+      <% if(user) { %>
       <h4 class="ui top attached block header"><i class="ui signal icon"></i>排名</h4>
       <div class="ui bottom attached segment">
         <table class="ui very basic center aligned table" style="table-layout: fixed; ">
           <thead>
             <tr>
 	            <th style="width: 50px; ">#</th>
-	            <th style="width: 170px; ">用户名</th>
+              <th style="width: 150px; ">用户名</th>
+              <th style="width: 150px; ">昵称/备注名</th>
 	            <th>个性签名</th>
             </tr>
           </thead>
-          <script data-cfasync="false">
+          <script>
           var lineHeight = 0;
           (function () {
             var div = document.createElement('div');
@@ -52,9 +54,10 @@
             %>
                 <tr>
                     <td><b><%= i %></b></td>
-                    <td><a href="<%= syzoj.utils.makeUrl(['user', user.id]) %>"><%= user.username %></a><% if (user.nameplate) { %><%- user.nameplate %><% } %></td>
+                    <td><a href="<%= syzoj.utils.makeUrl(['user', user.id]) %>"><span class="user-name user-<%= syzoj.utils.makeUserColor(user.rating, user.is_admin) %>"><%= user.username %></a><% if (user.nameplate) { %><span class="user-gray user-nameplate"><%= user.nameplate %></span><% } %></td>
+                    <td><% if (user.nickname) { %><%= user.nickname %><% } %></td>
                     <td style="font-content">
-                      <script id="user-infomation-script-<%= i %>" data-cfasync="false">
+                      <script id="user-infomation-script-<%= i %>">
                       (function () {
                         var html = <%- serializejs(user.information) %>;
                         var elem = document.createElement('div');
@@ -74,110 +77,73 @@
           </tbody>
         </table>
       </div>
+      <% } %>
     </div>
     <div class="right floated five wide column">
-        <h4 class="ui top attached block header"><i class="ui quote left icon"></i>一言（ヒトコト）</h4>
-        <div class="ui bottom attached center aligned segment">
-          <div class="ui active centered inline loader" id="hitokoto-loader"></div>
-          <script>
-          $.get('https://v1.hitokoto.cn/?c=a', function (data) {
-            if (typeof data === 'string') data = JSON.parse(data);
-            $('#hitokoto-loader').removeClass('active');
-            $('#hitokoto-content').css('display', '').text(data.hitokoto);
-            if (data.from) {
-              $('#hitokoto-from').css('display', '').text('——' + data.from);
-            }
-          });
-          </script>
-          <div style="font-size: 1em; line-height: 1.5em; display: none; " id="hitokoto-content"></div>
-          <div style="text-align: right; margin-top: 15px; font-size: 0.9em; color: #666; display: none; " id="hitokoto-from"></div>
-        </div>
-      <h4 class="ui top attached block header"><i class="ui rss icon"></i>最近更新</h4>
-      <div class="ui bottom attached segment">
-	<table class="ui very basic center aligned table">
-          <thead>
-            <tr>
-              <th width="70%">题目</th>
-              <th width="30%">更新时间</th>
-            </tr>
-	  </thead>
-	  <tbody>
-	    <%
-	    for (let problem of problems) {
-	    %>
-	    <tr>
-	      <td><a href="<%= syzoj.utils.makeUrl(['problem', problem.id]) %>"><%= problem.title %></a></td>
-	      <td><%= problem.time %></td>
-	    </tr>
-	    <% } %>
-	  </tbody>
-	</table>
-      </div>
+    <% if (is_logined && allowedManage && pending_user && pending_user.length) { %>
+  <h4 class="ui top attached block header"><i class="user icon"></i>待审核用户</h4>
+        <script>
+        function userAllow (username) {
+  $.ajax({
+    url: '/api/allow_user/' + username,
+    type: 'POST',
+    async: true
+  });
+  let nod = document.getElementById ("pending_" + username);
+  let par = nod.parentNode;
+  par.removeChild (nod);
+  if (!par.childElementCount) {
+    par.parentNode.removeChild (par);
+  }
+}
+function userBlock (username) {
+  $.ajax({
+    url: '/api/block_user/' + username,
+    type: 'POST',
+    async: true
+  });
+  let nod = document.getElementById ("pending_" + username);
+  let par = nod.parentNode;
+  par.removeChild (nod);
+  if (!par.childElementCount) {
+    par.parentNode.removeChild (par);
+  }
+}
+</script>
+  <div class="ui bottom attached segment">
+    <table class="ui very basic center aligned table" style="table-layout: fixed; ">
+      <tbody>
         <%
-        if (fortune) {
-            let color;
-            if (fortune.fortune.indexOf('吉') != -1) color = '#0ccf00';
-            else if (fortune.fortune.indexOf('凶') != -1) color = '#f25e65';
-            else color = '#444';
+        for (let i = 0; i < pending_user.length; i++) {
+          let user = pending_user[i];
         %>
-        <h4 class="ui top attached block header"><i class="ui magic icon"></i>今日运势</h4>
-        <div class="ui bottom attached segment">
-            <div style="height: 15px; "></div>
-            <div class="ui two column center aligned padded grid">
-                <div class="one column row">
-                    <div style="text-align: center; ">
-                        <div style="color: <%= color %>; font-size: 49px;"><%- (user.sex == -1 ? '♀ ' : '♂ ') + fortune.fortune + (user.sex == 1 ? ' <span style="transform: scaleX(-1); display: inline-block; ">♂</span>' : ' ♀') %></div>
-                    </div>
-                </div>
-                <div class="two column row">
-                    <div class="column">
-                        <div style="color: #0ccf00; ">
-                            <% if (fortune.good.length) { %>
-                            <strong>宜：</strong><%= fortune.good[0].title %>
-                            <br>
-                            <span style="color: #888; font-size: 0.7em; "><%= fortune.good[0].detail %></span>
-                            <div style="margin-top: 10px; "></div>
-                            <strong>宜：</strong><%= fortune.good[1].title %>
-                            <br>
-                            <span style="color: #888; font-size: 0.7em; "><%= fortune.good[1].detail %></span>
-                            <% } else { %>
-                            <strong>诸事不宜<br>
-                            </strong>
-                            <% } %>
-                        </div>
-                    </div>
-                    <div class="column">
-                        <div style="color: #f25e65; ">
-                            <% if (fortune.bad.length) { %>
-                            <strong>忌：</strong><%= fortune.bad[0].title %>
-                            <br>
-                            <span style="color: #888; font-size: 0.7em; "><%= fortune.bad[0].detail %></span>
-                            <div style="margin-top: 10px; "></div>
-                            <strong>忌：</strong><%= fortune.bad[1].title %>
-                            <br>
-                            <span style="color: #888; font-size: 0.7em; "><%= fortune.bad[1].detail %></span>
-                            <% } else { %>
-                            <strong>万事皆宜<br>
-                            </strong>
-                            <% } %>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+          <tr id = "pending_<%= user.username %>">
+            <td style="text-align:left;"><span class="user-name user-blue"><%= user.username %></span><span class="user-gray user-nameplate"><%= user.nameplate %></span></td>
+            <td style="width: 90px;">
+              <a style="width: 35px; padding-right: 5px; padding-left: 5px; padding-top: 5px; padding-bottom: 5px" class="ui mini green right button" onclick=userAllow("<%= user.username %>")>
+                通过
+              </a>
+              <a style="width: 35px; padding-right: 5px; padding-left: 5px; padding-top: 5px; padding-bottom: 5px" class="ui mini gray right button" onclick=userBlock("<%= user.username %>")>
+                忽略
+              </a>
+            </td>
+          </tr>
         <% } %>
-      <h4 class="ui top attached block header"><i class="ui search icon"></i>搜索题目</h4>
-      <div class="ui bottom attached segment">
-        <form action="<%= syzoj.utils.makeUrl(['problems', 'search']) %>" method="get">
-          <div class="ui search" style="width: 100%; ">
-            <div class="ui left icon input" style="width: 100%; ">
-              <input class="prompt" style="width: 100%; " type="text" placeholder="ID / 题目名 …" name="keyword">
-              <i class="search icon"></i>
-            </div>
-            <div class="results" style="width: 100%; "></div>
-          </div>
-        </form>
-      </div>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+    <h4 class="ui top attached block header"><i class="ui clock icon" style="display: inline-block; margin-right: .75rem;">
+    </i>距离 <span style="color: <%= noip_color %>">NOIP<%= noip_year %></span> 还有</h4>
+        <div class="ui bottom attached center aligned segment">
+            <svg width="140" height="140" viewBox="0 0 140 140">
+                <circle cx="70" cy="70" r="65" stroke-width="10" stroke="#E5E5E5" fill="none"></circle>
+                <circle cx="70" cy="70" r="65" stroke-width="10" stroke="<%= noip_color %>" fill="none" transform="matrix(0, -1, 1, 0, 0, 140)" stroke-dasharray="<%= noip_arc %> 409"></circle>
+                <text style="dominant-baseline:middle;text-anchor:middle;font-size: 30px;font-weight: 800; fill: <%= noip_color %>" y="70" x="70"><%= noip_day %>天</text>
+        </svg>
+    </div>
+      <% if(user) { %>
+      
       <h4 class="ui top attached block header"><i class="ui calendar icon"></i>近期比赛</h4>
       <div class="ui bottom attached <% if (!contests || !contests.length) { %>center aligned <% } %>segment">
         <% if (!contests || !contests.length) { %>
@@ -212,6 +178,76 @@
         </table>
         <% } %>
       </div>
+      <% } %>
+        <%
+        if (fortune) {
+            let color;
+            if (fortune.fortune.indexOf('吉') != -1) color = '#f25e65';
+            else if (fortune.fortune.indexOf('凶') != -1) color = '#0ccf00';
+            else color = '#444';
+        %>
+        <h4 class="ui top attached block header"><i class="ui magic icon"></i>今日运势</h4>
+        <div class="ui bottom attached segment">
+            <div style="height: 15px; "></div>
+            <div class="ui two column center aligned padded grid">
+                <div class="one column row">
+                    <div style="text-align: center; ">
+                        <div style="color: <%= color %>; font-size: 49px;"><%- (user.sex == -1 ? '♀ ' : '♂ ') + fortune.fortune + (user.sex == 1 ? ' <span style="transform: scaleX(-1); display: inline-block; ">♂</span>' : ' ♀') %></div>
+                    </div>
+                </div>
+                <div class="two column row">
+                    <div class="column">
+                        <div style="color: #f25e65; ">
+                            <% if (fortune.good.length) { %>
+                            <strong>宜：</strong><%= fortune.good[0].title %>
+                            <br>
+                            <span style="color: #888; font-size: 0.7em; "><%= fortune.good[0].detail %></span>
+                            <div style="margin-top: 10px; "></div>
+                            <strong>宜：</strong><%= fortune.good[1].title %>
+                            <br>
+                            <span style="color: #888; font-size: 0.7em; "><%= fortune.good[1].detail %></span>
+                            <% } else { %>
+                            <strong>诸事不宜<br>
+                            </strong>
+                            <% } %>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div style="color: #0ccf00; ">
+                            <% if (fortune.bad.length) { %>
+                            <strong>忌：</strong><%= fortune.bad[0].title %>
+                            <br>
+                            <span style="color: #888; font-size: 0.7em; "><%= fortune.bad[0].detail %></span>
+                            <div style="margin-top: 10px; "></div>
+                            <strong>忌：</strong><%= fortune.bad[1].title %>
+                            <br>
+                            <span style="color: #888; font-size: 0.7em; "><%= fortune.bad[1].detail %></span>
+                            <% } else { %>
+                            <strong>万事皆宜<br>
+                            </strong>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% } %>
+        <h4 class="ui top attached block header"><i class="ui quote left icon"></i>一言（ヒトコト）</h4>
+        <div class="ui bottom attached center aligned segment">
+          <div class="ui active centered inline loader" id="hitokoto-loader"></div>
+          <script>
+          $.get('https://v1.hitokoto.cn/?c=d', function (data) {
+            if (typeof data === 'string') data = JSON.parse(data);
+            $('#hitokoto-loader').removeClass('active');
+            $('#hitokoto-content').css('display', '').text(data.hitokoto);
+            if (data.from) {
+              $('#hitokoto-from').css('display', '').text('——' + data.from);
+            }
+          });
+          </script>
+          <div style="font-size: 1em; line-height: 1.5em; display: none; " id="hitokoto-content"></div>
+          <div style="text-align: right; margin-top: 15px; font-size: 0.9em; color: #666; display: none; " id="hitokoto-from"></div>
+        </div>
       <% if (typeof links !== 'undefined' && links && links.length) { %>
       <h4 class="ui top attached block header font-content"><i class="ui linkify icon"></i>友情链接</h4>
       <div class="ui bottom attached segment">
@@ -222,22 +258,4 @@
         </ul>
       </div>
       <% } %>
-    </div>
-  </div>
-</div>
-<script>
-$(function () {
-  $('.ui.search').search({
-    debug: true,
-    saveRemoteData: false,
-    apiSettings: {
-      url: '/api/v2/search/problems/{query}',
-      cache: false
-    },
-    fields: {
-      title: 'name'
-    }
-  });
-});
-</script>
 <% include footer %>

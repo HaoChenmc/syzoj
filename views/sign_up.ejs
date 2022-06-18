@@ -1,31 +1,39 @@
 <% this.title = '注册' %>
 <% include header %>
-<div class="padding">
-  <h1>注册</h1>
-  <div class="ui error message" id="error" data-am-alert hidden>
-    <p id="error_info"></p>
-  </div>
-          <form class="ui form">
-                <div class="field">
-                    <label for="username">用户名</label>
-                    <input type="text" placeholder="" id="username">
-                </div>
-                <div class="field">
-                    <label for="email">邮箱</label>
-                    <input type="email" placeholder="" id="email">
-                </div>
-                <div class="two fields">
-                    <div class="field">
-                    <label class="ui header">密码</label>
-                      <input type="password" placeholder="" id="password1">
-                    </div>
-                    <div class="field">
-                      <label class="ui header">确认密码</label>
-                      <input type="password" placeholder="" id="password2">
-                    </div>
-                </div>
-                <a id="sign_up" class="ui button" href="javascript:submit();">注册</a>
-            </form>
+<div class="ui middle aligned center aligned grid">
+    <div class="row">
+        <div class="column" style="max-width: 450px">
+            <h1>注册</h1>
+            <div class="ui error message" id="error" data-am-alert hidden>
+                <p id="error_info"></p>
+            </div>
+                    <form class="ui form">
+                            <div class="field">
+                                <label for="username">用户名</label>
+                                <input type="text" placeholder="" id="username">
+                            </div>
+                            <div class="field">
+                                <label for="nameplate">真实姓名<span style="color: Gainsboro; font-weight: 500;">真实姓名填写错误会影响管理员对该账号的审核</span></label>
+                                <input type="text" placeholder="" id="nameplate">
+                            </div>
+                            <div class="field">
+                                <label for="email">邮箱</label>
+                                <input type="email" placeholder="" id="email">
+                            </div>
+                            <div class="two fields">
+                                <div class="field">
+                                    <label class="ui header">密码</label>
+                                    <input type="password" placeholder="" id="password1">
+                                </div>
+                                <div class="field">
+                                    <label class="ui header">确认密码</label>
+                                    <input type="password" placeholder="" id="password2">
+                                </div>
+                            </div>
+                            <a id="sign_up" class="ui button" href="javascript:submit();">注册</a>
+                        </form>
+            </div>
+    </div>
 </div>
 <script src="<%- lib('blueimp-md5/2.10.0/js/md5.min.js') %>"></script>
 <script type="text/javascript">
@@ -40,7 +48,8 @@ function success() {
 }
 
 function mail_required() {
-    alert("注册确认邮件已经发送到您的邮箱的垃圾箱，点击邮件内的链接即可完成注册。");
+    alert("注册确认邮件已经发送到您的邮箱，点击邮件内的链接即可完成注册。");
+    alert("点击确认链接后如果出现 502 Bad Gateway 属于正常现象，重新返回主页等待网站管理员审核即可");
     var s = $("#email").val();
     var mailWebsite = 'https://mail.' + s.substring(s.indexOf('@') + 1, s.length);
     if (mailWebsite === 'https://mail.gmail.com') mailWebsite = 'https://mail.google.com';
@@ -60,6 +69,7 @@ function submit() {
         async: true,
         data: {
           username: $("#username").val(),
+          nameplate: $("#nameplate").val(),
           password: password,
           email: $("#email").val(),
           prevUrl: <%- serializejs(req.query.url || '/') %>
